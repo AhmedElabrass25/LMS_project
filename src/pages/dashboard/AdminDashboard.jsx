@@ -79,8 +79,6 @@ const AdminDashboard = () => {
               color: "green",
               icon: "📘",
             },
-            // { title: "Active Exams", value: 7, color: "yellow", icon: "📝" },
-            // { title: "Pending Requests", value: 3, color: "red", icon: "⚠️" },
           ].map((card, index) => (
             <div
               key={index}

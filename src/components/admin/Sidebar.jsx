@@ -62,11 +62,11 @@ const Sidebar = () => {
           <hr />
           <NavLink to="/allExams" icon={SiSpeedtest} text="All Exams" />
           <NavLink to="/addExam" icon={SiSpeedtest} text="Add Exams" />
-          <NavLink
+          {/* <NavLink
             to="/studentScores"
             icon={SiSpeedtest}
             text="Student Scores"
-          />
+          /> */}
 
           <hr />
           <NavLink

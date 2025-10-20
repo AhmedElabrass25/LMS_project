@@ -14,11 +14,11 @@ import ResetPassword from "./pages/student/profile/ResetPassword";
 import ForgotPassword from "./pages/student/profile/ForgotPassword";
 import StartExam from "./pages/student/exam/StartExam";
 import AllExams from "./pages/student/exam/AllExams";
-import CreateAdmin from "./pages/admin/CreateAdmin";
+// import CreateAdmin from "./pages/admin/CreateAdmin";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
 import AdminProtectedRoute from "./utils/AdminProtectedRoute";
 import AllUsers from "./pages/admin/AllUsers";
-import AllAdmins from "./pages/admin/AllAdmins";
+// import AllAdmins from "./pages/admin/AllAdmins";
 import AddLesson from "./pages/admin/lesson/AddLesson";
 import AllLessons from "./pages/admin/lesson/AllLessons";
 import UpdateLessons from "./pages/admin/lesson/UpdateLessons";
@@ -28,7 +28,7 @@ import AddExam from "./pages/admin/exam/AddExam";
 import AllQuestions from "./pages/admin/question/AllQuestion";
 import UpdateQuestion from "./pages/admin/question/UpdateQuestion";
 import AddQuestion from "./pages/admin/question/AddQuestion";
-import TheStudentScores from "./pages/admin/exam/TheSutdentScores";
+// import TheStudentScores from "./pages/admin/exam/TheSutdentScores";
 
 function App() {
   return (
@@ -205,14 +205,14 @@ function App() {
             </AdminProtectedRoute>
           }
         />
-        <Route
+        {/* <Route
           path="/studentScores"
           element={
             <AdminProtectedRoute>
               <TheStudentScores />
             </AdminProtectedRoute>
           }
-        />
+        /> */}
         {/* ===========================Question Routes========================== */}
         <Route
           path="/allQuestions"

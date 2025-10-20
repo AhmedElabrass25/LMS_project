@@ -132,30 +132,6 @@ function Courses() {
     );
   }
 
-  // Display error message if no courses found at all
-  // if (courses.length === 0 && !loading) {
-  //   return (
-  //     <DashboardLayout>
-  //       <div className="p-4 md:p-8">
-  //         <h1 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-3">
-  //           Available Lessons & Courses
-  //         </h1>
-  //         <div className="flex justify-center items-center h-[30vh] text-center">
-  //           <div className="text-xl text-gray-500 p-8 border rounded-lg shadow-md bg-white">
-  //             <h3 className="text-2xl font-semibold text-red-500 mb-2">
-  //               No Courses Matched Your Filters
-  //             </h3>
-  //             <p>
-  //               Try changing your filter selections or check your enrollment
-  //               status.
-  //             </p>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     </DashboardLayout>
-  //   );
-  // }
-
   return (
     <DashboardLayout>
       <div className="p-4 md:p-8">
@@ -216,7 +192,7 @@ function Courses() {
             loading ? "opacity-50 pointer-events-none" : ""
           }`}
         >
-          {loading && courses.length > 0 && <Loading/>}
+          {loading && courses.length > 0 && <Loading />}
           {courses.length === 0 && !loading && (
             <div className="p-4 md:p-8">
               <h1 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-3">
