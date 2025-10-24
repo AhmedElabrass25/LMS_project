@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../../layouts/DashboardLayout";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchOne, updateOne } from "../../../redux/slices/profileSlice";
 
 function EditProfile() {
+  const { profile } = useSelector((state) => state.profile);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -12,33 +15,15 @@ function EditProfile() {
     classLevel: "",
   });
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState("");
-  const navigate = useNavigate();
-
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return navigate("/login");
-
-    const fetchData = async () => {
-      try {
-        const res = await axios.get("https://edu-master-psi.vercel.app/user/", {
-          headers: { token },
-        });
-        const data = res.data.data;
-        setUserId(data._id);
-        setForm({
-          fullName: data.fullName,
-          email: data.email,
-          phoneNumber: data.phoneNumber || "",
-          classLevel: data.classLevel || "",
-        });
-      } catch {
-        toast.error("Failed to load user data");
-      }
-    };
-
-    fetchData();
-  }, [navigate]);
+    dispatch(fetchOne());
+    setForm({
+      fullName: profile.fullName,
+      email: profile.email,
+      phoneNumber: profile.phoneNumber || "",
+      classLevel: profile.classLevel || "",
+    });
+  }, [dispatch]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -46,22 +31,8 @@ function EditProfile() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const token = localStorage.getItem("token");
-
-    try {
-      await axios.put(
-        `https://edu-master-psi.vercel.app/user/${userId}`,
-        form,
-        { headers: { token } }
-      );
-      toast.success("Profile updated successfully!");
-      navigate("/profileStd");
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || "Update failed");
-    } finally {
-      setLoading(false);
-    }
+    dispatch(updateOne({ id: profile?._id, data: form }));
+    navigate("/profileStd");
   };
 
   return (

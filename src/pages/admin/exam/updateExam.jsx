@@ -1,20 +1,18 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import { useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
 import Loading from "../../../components/Loading";
 import LayoutAdmin from "../../../layouts/LayoutAdmin";
+import { useDispatch, useSelector } from "react-redux";
+import { updateOne } from "../../../redux/slices/examSlice";
+import { fetchById } from "../../../redux/slices/examSlice";
 
 const UpdateExam = () => {
   const { examId } = useParams(); // examId from route
-  console.log(examId);
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-
-  const [loadingData, setLoadingData] = useState(true);
-  const [btnLoading, setBtnLoading] = useState(false);
+  const { currentItem, loading } = useSelector((state) => state.exams);
+  const dispatch = useDispatch();
 
   // ✅ Validation Schema
   const validationSchema = Yup.object({
@@ -35,72 +33,29 @@ const UpdateExam = () => {
 
   // ✅ Formik Setup
   const formik = useFormik({
+    enableReinitialize: true, // ✅ مهم جدًا
     initialValues: {
-      title: "",
-      description: "",
-      duration: "",
-      classLevel: "",
-      startDate: "",
-      endDate: "",
-      isPublished: false,
+      title: currentItem?.title || "",
+      description: currentItem?.description || "",
+      duration: currentItem?.duration || "",
+      classLevel: currentItem?.classLevel || "",
+      startDate: currentItem?.startDate?.slice(0, 10) || "", // تحويل datetime لـ yyyy-mm-dd
+      endDate: currentItem?.endDate?.slice(0, 10) || "",
+      isPublished: currentItem?.isPublished || false,
     },
     validationSchema,
     onSubmit: async (values) => {
-      try {
-        setBtnLoading(true);
-        const res = await axios.put(
-          `https://edu-master-psi.vercel.app/exam/${examId}`,
-          values,
-          {
-            headers: { token },
-          }
-        );
-        toast.success("Exam updated successfully!");
-        navigate("/allExams");
-      } catch (error) {
-        console.error(error);
-        toast.error(error.response?.data?.message || "Failed to update exam");
-      } finally {
-        setBtnLoading(false);
-      }
+      dispatch(updateOne({ id: examId, data: values }));
+      navigate("/allExams");
     },
   });
 
   // ✅ Fetch Exam Data for Prefilling
   useEffect(() => {
-    const fetchExam = async () => {
-      try {
-        setLoadingData(true);
-        const res = await axios.get(
-          `https://edu-master-psi.vercel.app/exam/get/${examId}`,
-          {
-            headers: { token },
-          }
-        );
-        const exam = res.data.data;
-        formik.setValues({
-          title: exam.title || "",
-          description: exam.description || "",
-          duration: exam.duration || "",
-          classLevel: exam.classLevel || "",
-          startDate: exam.startDate ? exam.startDate.slice(0, 10) : "",
-          endDate: exam.endDate ? exam.endDate.slice(0, 10) : "",
-          isPublished: exam.isPublished || false,
-        });
-      } catch (error) {
-        console.error(error);
-        toast.error(
-          error.response?.data?.message || "Failed to fetch exam data"
-        );
-      } finally {
-        setLoadingData(false);
-      }
-    };
+    dispatch(fetchById(examId));
+  }, [dispatch, examId]);
 
-    fetchExam();
-  }, [examId]);
-
-  if (loadingData)
+  if (loading)
     return (
       <LayoutAdmin>
         <Loading />
@@ -233,7 +188,7 @@ const UpdateExam = () => {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
           >
-            {btnLoading ? "Updating..." : "Update Exam"}
+            {loading ? "Updating..." : "Update Exam"}
           </button>
         </form>
       </div>

@@ -1,53 +1,29 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import Loading from "../../components/Loading";
 import LayoutAdmin from "../../layouts/LayoutAdmin";
-import { jwtDecode } from "jwt-decode";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAll } from "../../redux/slices/userSlice";
 
 export default function AllUsers() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const dispatch = useDispatch();
+  const { users, loading, error } = useSelector((state) => state.users);
+
   const [currentPage, setCurrentPage] = useState(1);
-  const usersPerPage = 8; // عدد المستخدمين في الصفحة الواحدة
+  const usersPerPage = 13; // ✅ عدد المستخدمين في كل صفحة
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    dispatch(fetchAll());
+  }, [dispatch]);
 
-    // const decodedToken = jwtDecode(token);
-    // console.log("Decoded Token:", decodedToken);
-
-    const fetchUsers = async () => {
-      try {
-        const response = await axios.get(
-          "https://edu-master-psi.vercel.app/admin/all-user",
-          {
-            headers: {
-              token,
-            },
-          }
-        );
-
-        // console.log(response);
-        setUsers(response.data.data || []);
-      } catch (err) {
-        console.error(err);
-        setError(err.response?.data?.message || "فشل في جلب المستخدمين");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUsers();
-  }, []);
-
-  // Pagination Logic
+  // ✅ حساب المستخدمين في الصفحة الحالية
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
   const currentUsers = users.slice(indexOfFirstUser, indexOfLastUser);
+
+  // ✅ حساب عدد الصفحات الكلي
   const totalPages = Math.ceil(users.length / usersPerPage);
 
+  // ✅ وظائف التنقل بين الصفحات
   const nextPage = () => {
     if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
   };
@@ -71,89 +47,191 @@ export default function AllUsers() {
 
   return (
     <LayoutAdmin>
-      <div className="p-6">
-        <h2 className="text-3xl font-bold mb-6 text-gray-800 border-b pb-2">
-          All Registered Users
+      <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-gray-800 border-b pb-2 text-center sm:text-left">
+          👥 All Registered Users
         </h2>
 
-        {users.length === 0 ? (
-          <p className="text-gray-600 text-center">No users found.</p>
+        {currentUsers.length === 0 ? (
+          <p className="text-gray-600 text-center py-8">No users found. 😔</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border border-gray-200 rounded-lg shadow-sm">
-              <thead className="bg-blue-600 text-white">
-                <tr>
-                  <th className="p-3 border">#</th>
-                  <th className="p-3 border">Full Name</th>
-                  <th className="p-3 border">Email</th>
-                  <th className="p-3 border">Phone</th>
-                  <th className="p-3 border">Role</th>
-                  <th className="p-3 border">Class Level</th>
-                  <th className="p-3 border">Verified</th>
-                  <th className="p-3 border">Created At</th>
-                </tr>
-              </thead>
-              <tbody>
-                {currentUsers.map((user, i) => (
-                  <tr
-                    key={user._id || i}
-                    className="hover:bg-blue-50 transition"
-                  >
-                    <td className="p-3 border text-center">
-                      {indexOfFirstUser + i + 1}
-                    </td>
-                    <td className="p-3 border font-medium">{user.fullName}</td>
-                    <td className="p-3 border">{user.email}</td>
-                    <td className="p-3 border">{user.phoneNumber}</td>
-                    <td className="p-3 border capitalize text-center">
-                      <span
-                        className={`px-2 py-1 rounded text-white ${
-                          user.role === "admin" ? "bg-green-600" : "bg-blue-600"
-                        }`}
-                      >
-                        {user.role || "user"}
-                      </span>
-                    </td>
-                    <td className="p-3 border text-center">
-                      {user.classLevel || "—"}
-                    </td>
-                    <td className="p-3 border text-center">
-                      {user.isVerified ? (
-                        <span className="text-green-600 font-semibold">
-                          Yes
-                        </span>
-                      ) : (
-                        <span className="text-red-600 font-semibold">No</span>
-                      )}
-                    </td>
-                    <td className="p-3 border text-sm text-gray-500">
-                      {new Date(user.createdAt).toLocaleDateString()}
-                    </td>
+          <>
+            {/*
+          TABLE VIEW for Laptops and Desktops (sm breakpoint and up)
+          *** MODERN DESIGN REVISION APPLIED HERE ***
+        */}
+            <div className="hidden sm:block overflow-x-auto rounded-xl border border-gray-200 shadow-lg">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-blue-600 text-white">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider w-12">
+                      #
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">
+                      Full Name
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider w-32">
+                      Phone
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-24">
+                      Role
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-24">
+                      Class
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-24">
+                      Verified
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wider w-28">
+                      Created At
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-
-            {/* Pagination Controls */}
-            <div className="flex justify-between items-center mt-6">
-              <button
-                onClick={prevPage}
-                disabled={currentPage === 1}
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-              >
-                Prev
-              </button>
-              <p className="text-gray-700 font-medium">
-                Page {currentPage} of {totalPages}
-              </p>
-              <button
-                onClick={nextPage}
-                disabled={currentPage === totalPages}
-                className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50"
-              >
-                Next
-              </button>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100">
+                  {currentUsers.map((user, i) => (
+                    <tr
+                      key={user._id || i}
+                      className="hover:bg-blue-50 transition-colors duration-150 text-sm"
+                    >
+                      <td className="px-4 py-3 whitespace-nowrap text-center font-medium text-gray-600">
+                        {indexOfFirstUser + i + 1}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap font-medium text-gray-900">
+                        {user.fullName}
+                      </td>
+                      <td className="px-4 py-3 break-all text-gray-600">
+                        {user.email}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-gray-700">
+                        {user.phoneNumber}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-center capitalize">
+                        <span
+                          className={`px-2 py-1 rounded-full text-white text-xs font-medium ${
+                            user.role === "admin"
+                              ? "bg-green-600"
+                              : "bg-indigo-500"
+                          }`}
+                        >
+                          {user.role || "user"}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-center text-gray-700">
+                        {user.classLevel || "—"}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-center">
+                        {user.isVerified ? (
+                          <span className="text-green-600 font-bold text-sm">
+                            Yes ✅
+                          </span>
+                        ) : (
+                          <span className="text-red-500 font-bold text-sm">
+                            No ❌
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-gray-500 text-center">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
+
+            {/*
+          CARD VIEW for Mobile Phones (screens smaller than 'sm') - UNCHANGED
+        */}
+            <div className="sm:hidden grid gap-4">
+              {currentUsers.map((user, i) => (
+                <div
+                  key={user._id || i}
+                  className="bg-white rounded-lg shadow-md p-4 space-y-2 text-gray-700 border border-gray-200"
+                >
+                  <div className="flex justify-between items-center border-b pb-1">
+                    <p className="font-bold text-lg text-blue-700">
+                      {user.fullName}
+                    </p>
+                    <span className="text-sm font-medium text-gray-500">
+                      #{indexOfFirstUser + i + 1}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium">Role:</span>
+                    <span
+                      className={`px-2 py-1 rounded text-white text-xs capitalize ${
+                        user.role === "admin" ? "bg-green-600" : "bg-blue-600"
+                      }`}
+                    >
+                      {user.role || "user"}
+                    </span>
+                  </div>
+                  <p className="text-sm break-all">
+                    <span className="font-medium">Email:</span> {user.email}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Phone:</span>{" "}
+                    {user.phoneNumber || "—"}
+                  </p>
+                  <p className="text-sm">
+                    <span className="font-medium">Class:</span>{" "}
+                    {user.classLevel || "—"}
+                  </p>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="font-medium">Verified:</span>
+                    {user.isVerified ? (
+                      <span className="text-green-600 font-semibold">
+                        Yes ✅
+                      </span>
+                    ) : (
+                      <span className="text-red-600 font-semibold">No ❌</span>
+                    )}
+                  </div>
+                  <p className="text-xs text-gray-500 pt-1 border-t mt-2">
+                    <span className="font-medium">Registered:</span>{" "}
+                    {new Date(user.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* The pagination controls were already responsive, but I'll keep the styles clean */}
+        {totalPages > 1 && (
+          <div className="flex flex-wrap justify-center items-center mt-6 gap-2">
+            <button
+              onClick={prevPage}
+              disabled={currentPage === 1}
+              className="px-3 sm:px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 text-sm sm:text-base transition duration-150 ease-in-out"
+            >
+              Prev
+            </button>
+
+            {[...Array(totalPages)].map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCurrentPage(i + 1)}
+                className={`px-3 py-1 rounded text-sm sm:text-base transition duration-150 ease-in-out ${
+                  currentPage === i + 1
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "bg-gray-200 hover:bg-gray-300"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+
+            <button
+              onClick={nextPage}
+              disabled={currentPage === totalPages}
+              className="px-3 sm:px-4 py-2 bg-gray-200 rounded hover:bg-gray-300 disabled:opacity-50 text-sm sm:text-base transition duration-150 ease-in-out"
+            >
+              Next
+            </button>
           </div>
         )}
       </div>

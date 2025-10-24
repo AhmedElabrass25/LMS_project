@@ -1,43 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { Formik, Form, Field, FieldArray, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { toast } from "react-hot-toast";
 import Loading from "../../../components/Loading";
 import LayoutAdmin from "../../../layouts/LayoutAdmin";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchById, updateOne } from "../../../redux/slices/questionSlice";
+import { fetchAll } from "../../../redux/slices/examSlice";
+
 const UpdateQuestion = () => {
-  const { questionId } = useParams(); // question ID from URL
+  const { questionId } = useParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [question, setQuestion] = useState(null);
-  const token = localStorage.getItem("token");
+  const dispatch = useDispatch();
 
-  // Fetch existing question
+  const { currentQuestion, loading } = useSelector((state) => state.questions);
+  const { exams } = useSelector((state) => state.exams);
+
+  // ✅ Fetch question + exams
   useEffect(() => {
-    const fetchQuestion = async () => {
-      try {
-        const res = await axios.get(
-          `https://edu-master-psi.vercel.app/question/get/${questionId}`,
-          {
-            headers: { token },
-          }
-        );
-        console.log(res);
-        console.log(res.data.data.exam);
+    dispatch(fetchById(questionId));
+    dispatch(fetchAll());
+  }, [questionId, dispatch]);
 
-        setQuestion(res.data.data || []);
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to load question");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchQuestion();
-  }, [questionId, token]);
-
-  // Validation Schema
+  // ✅ Validation Schema
   const validationSchema = Yup.object({
     text: Yup.string().required("Question text is required"),
     type: Yup.string().required("Question type is required"),
@@ -56,35 +41,25 @@ const UpdateQuestion = () => {
     }),
   });
 
-  // Submit Handler
-  const handleSubmit = async (values, { setSubmitting }) => {
+  // ✅ Handle Submit
+  const handleSubmit = async (values) => {
     try {
-      const res = await axios.put(
-        `https://edu-master-psi.vercel.app/question/${questionId}`,
-        values,
-        {
-          headers: { token },
-        }
-      );
-      console.log(res);
-      toast.success("Question updated successfully!");
+      await dispatch(updateOne({ id: questionId, data: values })).unwrap();
       navigate("/allQuestions");
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Failed to update question");
-    } finally {
-      setSubmitting(false);
+    } catch (err) {
+      console.error("Update failed:", err);
     }
   };
 
-  if (loading)
+  // ✅ Loading and Not Found states
+  if (loading && !currentQuestion)
     return (
       <LayoutAdmin>
         <Loading />
       </LayoutAdmin>
     );
 
-  if (!question)
+  if (!currentQuestion)
     return (
       <div className="text-center text-gray-500 text-lg">
         Question not found.
@@ -98,17 +73,18 @@ const UpdateQuestion = () => {
 
         <Formik
           initialValues={{
-            text: question.text || "",
-            type: question.type || "multiple-choice",
-            options: question.options || [""],
-            correctAnswer: question.correctAnswer || "",
-            exam: question.exam._id || "",
-            points: question.points || 1,
+            text: currentQuestion.text || "",
+            type: currentQuestion.type || "multiple-choice",
+            options: currentQuestion.options || [""],
+            correctAnswer: currentQuestion.correctAnswer || "",
+            exam: currentQuestion.exam?._id || "",
+            points: currentQuestion.points || 1,
           }}
           validationSchema={validationSchema}
+          enableReinitialize
           onSubmit={handleSubmit}
         >
-          {({ values, isSubmitting }) => (
+          {({ values }) => (
             <Form className="space-y-4">
               {/* Question Text */}
               <div>
@@ -126,7 +102,7 @@ const UpdateQuestion = () => {
                 />
               </div>
 
-              {/* Type Select */}
+              {/* Type */}
               <div>
                 <label className="block font-medium mb-1">Question Type</label>
                 <Field
@@ -146,7 +122,7 @@ const UpdateQuestion = () => {
                 />
               </div>
 
-              {/* Options (only for multiple-choice) */}
+              {/* Options */}
               {values.type === "multiple-choice" && (
                 <div>
                   <label className="block font-medium mb-1">Options</label>
@@ -206,20 +182,21 @@ const UpdateQuestion = () => {
                 />
               </div>
 
-              {/* Exam ID */}
+              {/* Exam */}
               <div>
-                <label className="block font-medium mb-1">Exam ID</label>
+                <label className="block font-medium mb-1">Select Exam</label>
                 <Field
+                  as="select"
                   name="exam"
-                  type="text"
-                  placeholder="Enter exam ID"
                   className="w-full border p-2 rounded"
-                />
-                <ErrorMessage
-                  name="exam"
-                  component="div"
-                  className="text-red-500 text-sm"
-                />
+                >
+                  <option value="">Select an exam</option>
+                  {exams.map((exam) => (
+                    <option key={exam._id} value={exam._id}>
+                      {exam.title}
+                    </option>
+                  ))}
+                </Field>
               </div>
 
               {/* Points */}
@@ -237,13 +214,13 @@ const UpdateQuestion = () => {
                 />
               </div>
 
-              {/* Submit Button */}
+              {/* Submit */}
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={loading}
                 className="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700 transition disabled:opacity-50"
               >
-                {isSubmitting ? "Updating..." : "Update Question"}
+                {loading ? "Updating..." : "Update Question"}
               </button>
             </Form>
           )}

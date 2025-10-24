@@ -1,19 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import axios from "axios";
-import toast from "react-hot-toast";
+
 import LayoutAdmin from "../../../layouts/LayoutAdmin";
 import Loading from "../../../components/Loading";
 import { useParams, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchById, updateOne } from "../../../redux/slices/lessonSlice";
 
 const UpdateLesson = () => {
   const { lessonId } = useParams(); // lesson lessonId
   const navigate = useNavigate();
-  const [loadingData, setLoadingData] = useState(true);
-  const [btnLoading, setBtnLoading] = useState(false);
-
-  const token = localStorage.getItem("token");
+  const { loading, currentItem } = useSelector((state) => state.lessons);
+  const dispatch = useDispatch();
 
   const formik = useFormik({
     initialValues: {
@@ -21,7 +20,6 @@ const UpdateLesson = () => {
       description: "",
       video: "",
       classLevel: "",
-      //   scheduledDate: "",
       price: "",
     },
     validationSchema: Yup.object({
@@ -31,66 +29,35 @@ const UpdateLesson = () => {
         .url("Must be a valid URL")
         .required("Video URL is required"),
       classLevel: Yup.string().required("Class level is required"),
-      //   scheduledDate: Yup.date().required("Scheduled date is required"),
       price: Yup.number()
         .typeError("Price must be a number")
         .positive("Price must be positive")
         .required("Price is required"),
     }),
     onSubmit: async (values) => {
-      try {
-        setBtnLoading(true);
-        const res = await axios.put(
-          `https://edu-master-psi.vercel.app/lesson/${lessonId}`,
-          values,
-          { headers: { token } }
-        );
-        toast.success("Lesson updated successfully!");
-        navigate("/allLessons"); // redirect to lessons list
-      } catch (error) {
-        console.error(error);
-        toast.error(error.response?.data?.message || "Failed to update lesson");
-      } finally {
-        setBtnLoading(false);
-      }
+      dispatch(updateOne({ id: lessonId, data: values }));
+      navigate("/allLessons");
     },
   });
 
   useEffect(() => {
-    const fetchLesson = async () => {
-      try {
-        setLoadingData(true);
-        const res = await axios.get(
-          `https://edu-master-psi.vercel.app/lesson/${lessonId}`,
-          {
-            headers: { token },
-          }
-        );
-        console.log(res);
-        formik.setValues({
-          title: res.data.data.title || "",
-          description: res.data.data.description || "",
-          video: res.data.data.video || "",
-          classLevel: res.data.data.classLevel || "",
-          //   scheduledDate: res.data.data.scheduledDate
-          //     ? res.data.data.scheduledDate.slice(0, 10)
-          //     : "",
-          price: res.data.data.price || "",
-        });
-      } catch (error) {
-        console.error(error);
-        toast.error(
-          error.response?.data?.message || "Failed to fetch lesson data"
-        );
-      } finally {
-        setLoadingData(false);
-      }
-    };
+    dispatch(fetchById(lessonId));
+  }, [dispatch, lessonId]);
 
-    fetchLesson();
-  }, [lessonId]);
+  // ✅ بعد ما البيانات توصل، نعبّي الفورم بـ Formik
+  useEffect(() => {
+    if (currentItem) {
+      formik.setValues({
+        title: currentItem.title || "",
+        description: currentItem.description || "",
+        video: currentItem.video || "",
+        classLevel: currentItem.classLevel || "",
+        price: currentItem.price || "",
+      });
+    }
+  }, [currentItem]);
 
-  if (loadingData)
+  if (loading)
     return (
       <LayoutAdmin>
         <Loading />
@@ -174,24 +141,6 @@ const UpdateLesson = () => {
             )}
           </div>
 
-          {/* Scheduled Date */}
-          {/* <div>
-            <label className="block font-medium">Scheduled Date</label>
-            <input
-              type="date"
-              name="scheduledDate"
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values.scheduledDate}
-              className="w-full border border-gray-300 rounded-md p-2"
-            />
-            {formik.touched.scheduledDate && formik.errors.scheduledDate && (
-              <p className="text-red-500 text-sm">
-                {formik.errors.scheduledDate}
-              </p>
-            )}
-          </div> */}
-
           {/* Price */}
           <div>
             <label className="block font-medium">Price</label>
@@ -212,7 +161,7 @@ const UpdateLesson = () => {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition flex justify-center items-center"
           >
-            {btnLoading ? "Updating..." : "Update Lesson"}
+            {loading ? "Updating..." : "Update Lesson"}
           </button>
         </form>
       </div>

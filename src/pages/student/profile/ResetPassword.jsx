@@ -1,8 +1,8 @@
 import { useState } from "react";
-import axios from "axios";
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../../layouts/DashboardLayout";
+import { useDispatch, useSelector } from "react-redux";
+import { resetPassword } from "../../../redux/slices/profileSlice";
 
 function ResetPassword() {
   const [form, setForm] = useState({
@@ -11,31 +11,17 @@ function ResetPassword() {
     newPassword: "",
     cpassword: "",
   });
-  const [loading, setLoading] = useState(false);
+  const { loading } = useSelector((state) => state.profile);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
-
-    try {
-      const res = await axios.post(
-        "https://edu-master-psi.vercel.app/user/reset-password",
-        form
-      );
-
-      toast.success(res.data.message || "Password reset successfully!");
-      localStorage.removeItem("token"); // remove old session
-      navigate("/login");
-    } catch (err) {
-      console.error(err);
-      toast.error(err.response?.data?.message || "Reset failed");
-    } finally {
-      setLoading(false);
-    }
+    dispatch(resetPassword(form));
+    navigate("/login");
   };
 
   return (

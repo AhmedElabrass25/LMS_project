@@ -1,17 +1,14 @@
-import { useState } from "react";
-import axios from "axios";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
-import Loading from "../../../components/Loading";
 import LayoutAdmin from "../../../layouts/LayoutAdmin";
+import { useDispatch, useSelector } from "react-redux";
+import { addOne } from "../../../redux/slices/examSlice";
 
 const AddExam = () => {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-
-  const [btnLoading, setBtnLoading] = useState(false);
+  const { loading } = useSelector((state) => state.exams);
+  const dispatch = useDispatch();
 
   // ✅ Validation Schema
   const validationSchema = Yup.object({
@@ -43,24 +40,8 @@ const AddExam = () => {
     },
     validationSchema,
     onSubmit: async (values) => {
-      try {
-        setBtnLoading(true);
-        const res = await axios.post(
-          "https://edu-master-psi.vercel.app/exam",
-          values,
-          {
-            headers: { token },
-          }
-        );
-        console.log(res);
-        toast.success("Exam added successfully!");
-        navigate("/allExams");
-      } catch (error) {
-        console.error(error);
-        toast.error(error.response?.data?.message || "Failed to add exam");
-      } finally {
-        setBtnLoading(false);
-      }
+      dispatch(addOne(values));
+      navigate("/allExams");
     },
   });
 
@@ -189,9 +170,9 @@ const AddExam = () => {
           <button
             type="submit"
             className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
-            disabled={btnLoading}
+            disabled={loading}
           >
-            {btnLoading ? "Adding..." : "Add Exam"}
+            {loading ? "Adding..." : "Add Exam"}
           </button>
         </form>
       </div>

@@ -3,11 +3,16 @@ import Sidebar from "../components/admin/Sidebar";
 
 export default function DashboardLayout({ children }) {
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex bg-gray-100 min-h-screen overflow-hidden">
+      {/* Sidebar ثابت */}
       <Sidebar />
-      <div className="flex-1 flex flex-col pl-16 md:pl-64 transition-all duration-300">
+
+      {/* Main content */}
+      <div className="flex-1 flex flex-col h-screen pl-0 md:pl-64 transition-all duration-300">
         <Header />
-        <main className="flex-1 lg:p-6">{children}</main>
+
+        {/* المحتوى قابل للتمرير */}
+        <main className="flex-1 overflow-y-auto p-2 md:p-6">{children}</main>
       </div>
     </div>
   );

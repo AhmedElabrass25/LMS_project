@@ -1,14 +1,15 @@
-import React, { useState } from "react";
-import axios from "axios";
+import { useState } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import DashboardLayout from "../../../layouts/DashboardLayout";
-import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { forgetPassword } from "../../../redux/slices/profileSlice";
 
 const ForgotPassword = () => {
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { loading } = useSelector((state) => state.profile);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const initialValues = {
@@ -20,24 +21,9 @@ const ForgotPassword = () => {
   });
 
   const handleSubmit = async (values, { resetForm }) => {
-    setLoading(true);
     setMessage("");
-    try {
-      const res = await axios.post(
-        "https://edu-master-psi.vercel.app/user/forgot-password",
-        values
-      );
-      setMessage(res.data.message || "Check your email for reset link");
-      //   make toast
-      toast.success(res.data.message);
-      navigate("/reset-password");
-    } catch (error) {
-      setMessage(
-        error.response?.data?.message || "Something went wrong, try again"
-      );
-    } finally {
-      setLoading(false);
-    }
+    dispatch(forgetPassword(values));
+    navigate("/reset-password");
   };
 
   return (

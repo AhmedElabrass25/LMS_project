@@ -1,16 +1,15 @@
-import { useState, useEffect } from "react";
-import axios from "axios";
+import { useEffect } from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { toast } from "react-hot-toast";
 import LayoutAdmin from "../../../layouts/LayoutAdmin";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchAll } from "../../../redux/slices/examSlice";
+import { addOne } from "../../../redux/slices/questionSlice";
 
 const AddQuestion = () => {
-  const [loading, setLoading] = useState(false);
-  const [exams, setExams] = useState([]);
-  const [loadingExams, setLoadingExams] = useState(true);
+  const { exams, loading } = useSelector((state) => state.exams);
 
-  const token = localStorage.getItem("token");
+  const dispatch = useDispatch();
 
   const initialValues = {
     text: "",
@@ -31,53 +30,22 @@ const AddQuestion = () => {
 
   // Fetch all exams to show in dropdown
   useEffect(() => {
-    const fetchExams = async () => {
-      try {
-        const res = await axios.get("https://edu-master-psi.vercel.app/exam", {
-          headers: { token },
-        });
-        setExams(res.data.data || []);
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to load exams");
-      } finally {
-        setLoadingExams(false);
-      }
-    };
-
-    fetchExams();
-  }, [token]);
+    dispatch(fetchAll());
+  }, [dispatch]);
 
   const handleSubmit = async (values, { resetForm }) => {
-    try {
-      setLoading(true);
+    const questionData = {
+      text: values.text,
+      type: values.type,
+      correctAnswer: values.correctAnswer,
+      exam: values.exam,
+      points: values.points,
+    };
 
-      const questionData = {
-        text: values.text,
-        type: values.type,
-        correctAnswer: values.correctAnswer,
-        exam: values.exam,
-        points: values.points,
-      };
-
-      if (values.type === "multiple-choice") {
-        questionData.options = values.options;
-      }
-
-      await axios.post(
-        "https://edu-master-psi.vercel.app/question",
-        questionData,
-        { headers: { token } }
-      );
-
-      toast.success("Question added successfully!");
-      resetForm();
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Something went wrong");
-    } finally {
-      setLoading(false);
+    if (values.type === "multiple-choice") {
+      questionData.options = values.options;
     }
+    dispatch(addOne(questionData)).then(() => resetForm());
   };
 
   return (
@@ -200,10 +168,10 @@ const AddQuestion = () => {
                   name="exam"
                   as="select"
                   className="w-full p-2 border rounded"
-                  disabled={loadingExams}
+                  disabled={loading}
                 >
                   <option value="">
-                    {loadingExams ? "Loading exams..." : "Select an exam"}
+                    {loading ? "Loading exams..." : "Select an exam"}
                   </option>
                   {exams.map((exam) => (
                     <option key={exam._id} value={exam._id}>
