@@ -10,6 +10,7 @@ const Exams = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { loading, exams } = useSelector((state) => state.exams);
+  console.log(exams);
   // ✅ Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const examsPerPage = 10;

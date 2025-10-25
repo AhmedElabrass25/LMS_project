@@ -28,6 +28,7 @@ import AddExam from "./pages/admin/exam/AddExam";
 import AllQuestions from "./pages/admin/question/AllQuestion";
 import UpdateQuestion from "./pages/admin/question/UpdateQuestion";
 import AddQuestion from "./pages/admin/question/AddQuestion";
+import ViewResultExam from "./pages/student/exam/ViewResultExam";
 // import TheStudentScores from "./pages/admin/exam/TheSutdentScores";
 
 function App() {
@@ -126,6 +127,14 @@ function App() {
           element={
             <PrivateRoute>
               <StartExam />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/viewExamResult/:examId"
+          element={
+            <PrivateRoute>
+              <ViewResultExam />
             </PrivateRoute>
           }
         />

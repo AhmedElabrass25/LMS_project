@@ -8,9 +8,7 @@ export const createCrudThunks = (thunkName) => ({
     async (page, thunkAPI) => {
       try {
         const url = page ? `/${thunkName}?page=${page}` : `/${thunkName}`;
-
         const res = await axiosInstance.get(url);
-        console.log(res.data);
         const data = res.data.data || [];
         const pagination = res.data.pagination || null;
 

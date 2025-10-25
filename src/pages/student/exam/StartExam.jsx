@@ -27,9 +27,8 @@ const StartExam = () => {
         toast.error("You must be logged in to start the exam");
         return;
       }
-
       try {
-        // 🟢 Step 1: Start Exam & Get Exam Info
+        // 🟢 Step 2: Start Exam & Get Exam Info
         const res = await axios.post(
           `https://edu-master-psi.vercel.app/studentExam/start/${examId}`,
           {},
@@ -41,7 +40,7 @@ const StartExam = () => {
         setStartTime(startTime);
         setEndTime(endTime);
 
-        // 🟢 Step 2: Fetch All Questions by ID
+        // 🟢 Step 3: Fetch Questions
         const questionRequests = exam.questions.map((id) =>
           axios
             .get(`https://edu-master-psi.vercel.app/question/get/${id}`, {
@@ -92,7 +91,7 @@ const StartExam = () => {
         payload,
         { headers: { token } }
       );
-      console.log(res);
+      console.log(res.data.data);
       setResult(res.data);
       setSubmitted(true);
       toast.success("Exam submitted successfully!");
@@ -112,39 +111,44 @@ const StartExam = () => {
       </DashboardLayout>
     );
 
-  // 🧩 UI
+  // ✅ Show result after submission
+  if (submitted) {
+    return (
+      <DashboardLayout>
+        <ExamResult result={result} />
+      </DashboardLayout>
+    );
+  }
+
+  // 🧩 Normal Exam UI
   return (
     <DashboardLayout>
-      {submitted ? (
-        <ExamResult result={result} />
-      ) : (
-        <div className="p-6 space-y-6">
-          <ExamHeader
-            name={exam?.title}
-            description={exam?.description}
-            classLevel={exam?.classLevel}
-          />
+      <div className="p-6 space-y-6">
+        <ExamHeader
+          name={exam?.title}
+          description={exam?.description}
+          classLevel={exam?.classLevel}
+        />
 
-          <ExamTimer
-            startTime={startTime}
-            endTime={endTime}
-            onExpire={handleSubmit}
-          />
+        <ExamTimer
+          startTime={startTime}
+          endTime={endTime}
+          onExpire={handleSubmit}
+        />
 
-          <QuestionList
-            questions={questions}
-            answers={answers}
-            onAnswer={handleAnswer}
-          />
+        <QuestionList
+          questions={questions}
+          answers={answers}
+          onAnswer={handleAnswer}
+        />
 
-          <button
-            onClick={handleSubmit}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-          >
-            {loading ? "Submitting..." : "Submit Exam"}
-          </button>
-        </div>
-      )}
+        <button
+          onClick={handleSubmit}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+        >
+          {loading ? "Submitting..." : "Submit Exam"}
+        </button>
+      </div>
     </DashboardLayout>
   );
 };

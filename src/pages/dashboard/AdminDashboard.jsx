@@ -9,6 +9,7 @@ import { fetchAll as fetchAllExams } from "../../redux/slices/examSlice";
 
 import Loading from "../../components/Loading";
 const AdminDashboard = () => {
+  console.log(jwtDecode(localStorage.getItem("token")));
   const navigate = useNavigate();
   const dispatch = useDispatch();
 

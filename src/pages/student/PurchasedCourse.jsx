@@ -72,7 +72,7 @@ const PurchasedCourse = () => {
               here!
             </p>
             <button
-              onClick={() => navigate("/lessons")}
+              onClick={() => navigate("/coursesStd")}
               className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition"
             >
               Browse Available Lessons

@@ -18,7 +18,7 @@ const StudentDashboard = () => {
 
   const navigate = useNavigate();
   let user = token ? jwtDecode(token) : null;
-
+  console.log(user);
   useEffect(() => {
     if (!token) {
       navigate("/login");
